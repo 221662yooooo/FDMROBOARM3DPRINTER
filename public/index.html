@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="SCARA Robotic Arm Based FDM 3D Printer with IoT Monitoring - Final Year Project, Air University Islamabad"/>
+<title>SCARA FDM 3D Printer — Air University FYP 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --neon:#00f0ff;--neon2:#0080ff;--neon3:#00aaff;
+  --neon-glow:0 0 8px #00f0ff,0 0 24px #00f0ffaa,0 0 56px #00f0ff44;
+  --neon2-glow:0 0 8px #0080ff,0 0 24px #0080ffaa;
+  --bg:#030a10;--bg2:#050d16;--bg3:#071525;--bg4:#040e1a;
+  --txt:#c8e8f5;--dim:#5a8fa8;--card:#061420;--card2:#081828;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:17px;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--neon);border-radius:2px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 52px;height:58px;display:flex;align-items:center;justify-content:space-between;background:rgba(3,10,16,.96);backdrop-filter:blur(16px);border-bottom:1px solid #00f0ff18;}
+.nav-logo{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;color:var(--neon);letter-spacing:4px;text-shadow:var(--neon-glow);}
+.nav-links{display:flex;gap:24px;flex-wrap:wrap;}
+.nav-links a{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--dim);text-decoration:none;transition:color .3s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--neon);transition:width .3s;}
+.nav-links a:hover{color:var(--neon);}
+.nav-links a:hover::after{width:100%;}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 52px 80px;position:relative;overflow:hidden;}
+.hero-bg-grid{position:absolute;inset:0;background-image:linear-gradient(#00f0ff07 1px,transparent 1px),linear-gradient(90deg,#00f0ff07 1px,transparent 1px);background-size:56px 56px;animation:gridMove 24s linear infinite;}
+@keyframes gridMove{from{transform:translateY(0)}to{transform:translateY(56px)}}
+.hero-bg-glow{position:absolute;width:700px;height:700px;background:radial-gradient(circle,#00f0ff0e 0%,transparent 68%);top:50%;left:50%;transform:translate(-50%,-50%);animation:glowPulse 5s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+.hc{position:absolute;width:120px;height:120px;}
+.hc.tl{top:80px;left:52px;border-top:1px solid #00f0ff33;border-left:1px solid #00f0ff33;}
+.hc.tr{top:80px;right:52px;border-top:1px solid #00f0ff33;border-right:1px solid #00f0ff33;}
+.hc.bl{bottom:40px;left:52px;border-bottom:1px solid #00f0ff22;border-left:1px solid #00f0ff22;}
+.hc.br{bottom:40px;right:52px;border-bottom:1px solid #00f0ff22;border-right:1px solid #00f0ff22;}
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:5px;color:var(--neon);margin-bottom:20px;z-index:1;animation:fadeUp .8s ease both;display:flex;align-items:center;gap:14px;}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';flex:1;max-width:50px;height:1px;background:linear-gradient(90deg,transparent,var(--neon));}
+.hero-eyebrow::after{transform:rotate(180deg);}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(18px,3vw,44px);font-weight:900;line-height:1.2;max-width:920px;color:#fff;text-shadow:0 0 50px #00f0ff55;margin-bottom:8px;z-index:1;animation:fadeUp .8s .15s ease both;letter-spacing:2px;}
+.hero-title .hl{color:var(--neon);text-shadow:var(--neon-glow);display:block;}
+.hero-divider{display:flex;align-items:center;gap:16px;margin:24px 0;z-index:1;animation:fadeUp .8s .3s ease both;}
+.hdl{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--neon));}
+.hdd{width:8px;height:8px;background:var(--neon);transform:rotate(45deg);box-shadow:var(--neon-glow);}
+.hdl:last-child{transform:rotate(180deg);}
+.hero-subtitle{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--dim);margin-bottom:48px;z-index:1;animation:fadeUp .8s .45s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* SPECS STRIP */
+.specs-strip{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:52px;z-index:1;animation:fadeUp .8s .5s ease both;}
+.spec-chip{background:var(--card);border:1px solid #00f0ff22;border-radius:6px;padding:10px 18px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:90px;}
+.spec-val{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--neon);line-height:1;}
+.spec-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:2px;text-align:center;}
+
+/* TEAM */
+.team-section{z-index:1;animation:fadeUp .8s .6s ease both;width:100%;max-width:860px;}
+.team-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--dim);margin-bottom:18px;}
+.team-grid{display:flex;gap:36px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;}
+.team-member{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.av-wrap{position:relative;}
+.av-ring{position:absolute;inset:-6px;border-radius:50%;border:1px solid #00f0ff22;animation:ringP 3s ease-in-out infinite;}
+@keyframes ringP{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.8;transform:scale(1.05)}}
+.avatar{width:88px;height:88px;border-radius:50%;background:var(--card);border:2px solid var(--neon);box-shadow:0 0 20px #00f0ff33,inset 0 0 20px #00f0ff0a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;transition:box-shadow .3s,transform .4s;}
+.avatar:hover{box-shadow:var(--neon-glow);transform:scale(1.07);}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;position:absolute;inset:0;}
+.avatar input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;}
+.av-inner{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--neon);text-align:center;line-height:1.5;pointer-events:none;}
+.av-scan{position:absolute;top:-50%;left:0;right:0;height:50%;background:linear-gradient(180deg,transparent,#00f0ff18,transparent);animation:avScan 3s ease-in-out infinite;pointer-events:none;}
+@keyframes avScan{0%{top:-50%}100%{top:150%}}
+.member-name{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--txt);letter-spacing:1px;text-align:center;max-width:115px;}
+.member-role{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:2px;}
+.member-id{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00f0ff44;letter-spacing:1px;}
+.sup-section{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sup-badge{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--neon2);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.sup-badge::before,.sup-badge::after{content:'';width:20px;height:1px;background:var(--neon2);}
+
+/* SECTIONS */
+.sw{padding:96px 52px;}
+.si{max-width:1200px;margin:0 auto;}
+.se{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--neon);margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+.se::before{content:'';width:28px;height:1px;background:var(--neon);}
+.st{font-family:'Orbitron',monospace;font-size:clamp(24px,3vw,40px);font-weight:900;color:#fff;margin-bottom:48px;position:relative;display:inline-block;letter-spacing:2px;}
+.st span{color:var(--neon);}
+.st::after{content:'';position:absolute;bottom:-10px;left:0;width:55%;height:2px;background:linear-gradient(90deg,var(--neon),transparent);}
+
+/* ABSTRACT */
+.ab-body{font-size:16px;line-height:2;color:var(--txt);font-weight:400;max-width:820px;margin-bottom:72px;}
+.ab-body p+p{margin-top:18px;}
+.ab-body strong{color:var(--neon);font-weight:600;}
+
+/* SPECS TABLE */
+.specs-table{background:var(--card2);border:1px solid #00f0ff18;border-radius:12px;overflow:hidden;margin-bottom:72px;}
+.specs-table-head{background:#00f0ff0a;padding:14px 24px;font-family:'Orbitron',monospace;font-size:12px;color:var(--neon);letter-spacing:3px;border-bottom:1px solid #00f0ff22;}
+.specs-row{display:grid;grid-template-columns:1fr 2fr;padding:12px 24px;border-bottom:1px solid #00f0ff0a;transition:background .2s;}
+.specs-row:last-child{border-bottom:none;}
+.specs-row:hover{background:#00f0ff06;}
+.specs-key{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:1px;}
+.specs-val{font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--txt);font-weight:500;}
+
+/* MERGE */
+.merge-scene{position:relative;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.merge-objects{display:flex;gap:52px;align-items:center;justify-content:center;transition:all .7s ease;}
+.obj-card{width:160px;height:200px;background:var(--card);border:1px solid var(--neon);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;position:relative;overflow:hidden;transition:all .9s cubic-bezier(.4,0,.2,1);}
+.obj-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#00f0ff0a,transparent);}
+.obj-card::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,#00f0ff08,transparent);animation:sheen 4s ease-in-out infinite;}
+@keyframes sheen{0%{left:-100%}100%{left:200%}}
+.obj-card:nth-child(3) .obj-icon{animation-delay:.5s;}
+.obj-card:nth-child(5) .obj-icon{animation-delay:1s;}
+.obj-icon{font-size:48px;filter:drop-shadow(0 0 10px var(--neon));animation:floatIcon 3.5s ease-in-out infinite;}
+@keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.obj-label{font-family:'Orbitron',monospace;font-size:10px;color:var(--neon);letter-spacing:2px;text-align:center;line-height:1.5;}
+.obj-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);text-align:center;letter-spacing:1px;}
+.merge-conn{display:flex;flex-direction:column;align-items:center;opacity:.7;transition:opacity .5s;}
+.merge-conn span{font-size:22px;color:var(--neon);animation:connP 1.8s ease-in-out infinite;}
+@keyframes connP{0%,100%{opacity:.3}50%{opacity:1}}
+.merge-result{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(10deg);transition:all .9s cubic-bezier(.34,1.56,.64,1);position:absolute;top:50%;left:50%;width:280px;height:200px;background:linear-gradient(135deg,#061e35,#082030);border:1px solid var(--neon);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:var(--neon-glow);pointer-events:none;}
+.merge-result.visible{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);pointer-events:all;}
+.merge-objects.merging .obj-card{opacity:0;transform:scale(.2);}
+.merge-objects.merging .merge-conn{opacity:0;}
+.merge-hint{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:3px;animation:hb 2s ease-in-out infinite;}
+@keyframes hb{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* HOW IT WORKS */
+.steps{display:flex;flex-direction:column;gap:0;position:relative;}
+.steps::before{content:'';position:absolute;left:36px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--neon),var(--neon2),var(--neon3),var(--neon));box-shadow:0 0 10px var(--neon);z-index:0;}
+.step{display:flex;gap:40px;align-items:flex-start;padding:38px 0;opacity:0;transform:translateX(-24px);transition:opacity .6s,transform .6s;}
+.step.vis{opacity:1;transform:translateX(0);}
+.snum-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;z-index:1;}
+.snum{width:72px;height:72px;border-radius:50%;background:var(--bg);border:2px solid var(--neon);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px #00f0ff44;position:relative;}
+.snum-inner{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:var(--neon);}
+.snum-ring{position:absolute;inset:-6px;border-radius:50%;border:1px solid #00f0ff22;animation:snRing 3s ease-in-out infinite;}
+@keyframes snRing{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.8;transform:scale(1.06)}}
+.sc{flex:1;padding-top:6px;}
+.stag{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--neon2);margin-bottom:7px;}
+.sti{font-family:'Orbitron',monospace;font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:1px;}
+.sd{font-size:15px;line-height:1.9;color:var(--txt);font-weight:400;margin-bottom:20px;max-width:720px;}
+.sd strong{color:var(--neon);}
+
+/* VIDEO EMBED */
+.vew{position:relative;max-width:580px;}
+.vel{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--neon);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.vel::before{content:'';width:16px;height:1px;background:var(--neon);}
+.vbox{background:var(--card);border:1px solid #00f0ff33;border-radius:10px;overflow:hidden;}
+.vrow{display:flex;gap:10px;padding:12px;}
+.vinput{flex:1;background:var(--bg);border:1px solid #00f0ff33;border-radius:6px;padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--neon);letter-spacing:1px;outline:none;transition:border-color .3s;}
+.vinput::placeholder{color:var(--dim);}
+.vinput:focus{border-color:var(--neon);}
+.vbtn{background:var(--neon);color:var(--bg);border:none;border-radius:6px;padding:9px 16px;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .3s;white-space:nowrap;font-weight:700;}
+.vbtn:hover{background:#fff;box-shadow:var(--neon-glow);}
+.vframe{width:100%;height:300px;border:none;display:none;}
+.vph{height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;position:relative;transition:background .3s;}
+.vph:hover{background:#00f0ff06;}
+.vph-icon{font-size:32px;opacity:.3;}
+.vph-text{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);text-align:center;line-height:1.8;}
+.vph-hint{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:#00f0ff33;}
+.vph input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.vph video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;}
+
+/* IOT SECTION */
+.iot-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:48px;}
+.iot-card{background:var(--card2);border:1px solid #00f0ff18;border-radius:10px;padding:28px;transition:border-color .3s;}
+.iot-card:hover{border-color:#00f0ff44;}
+.iot-icon{font-size:28px;margin-bottom:12px;display:block;}
+.iot-title{font-family:'Orbitron',monospace;font-size:14px;color:var(--neon);margin-bottom:10px;letter-spacing:1px;}
+.iot-body{font-size:14px;line-height:1.8;color:var(--dim);}
+.iot-body strong{color:var(--txt);}
+
+/* RESULT */
+.result-layout{display:flex;flex-direction:column;align-items:center;gap:56px;}
+.orbit-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;}
+.orbit{width:300px;height:300px;position:relative;display:flex;align-items:center;justify-content:center;}
+.or1{position:absolute;inset:0;border-radius:50%;border:1px solid #00f0ff22;animation:orSpin 22s linear infinite;}
+.or2{position:absolute;inset:22px;border-radius:50%;border:1px dashed #00f0ff44;animation:orSpin 16s linear infinite reverse;}
+.or3{position:absolute;inset:50px;border-radius:50%;border:2px solid var(--neon);box-shadow:var(--neon-glow);animation:orSpin 9s linear infinite;}
+.or-dot{position:absolute;width:9px;height:9px;background:var(--neon);border-radius:50%;box-shadow:var(--neon-glow);top:0;left:50%;transform:translateX(-50%);}
+.or-dot2{position:absolute;width:7px;height:7px;background:var(--neon2);border-radius:50%;box-shadow:var(--neon2-glow);bottom:22px;right:22px;}
+@keyframes orSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.orbit-core{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#082030,#040e18);border:2px solid var(--neon);box-shadow:var(--neon-glow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:0;transform:scale(0) rotate(-180deg);transition:all 1s cubic-bezier(.34,1.56,.64,1);}
+.orbit-core.vis{opacity:1;transform:scale(1) rotate(0deg);}
+.oc-icon{font-size:42px;filter:drop-shadow(0 0 12px var(--neon));}
+.oc-label{font-family:'Orbitron',monospace;font-size:8px;color:var(--neon);letter-spacing:1px;text-align:center;padding:0 8px;}
+.orbit-caption{text-align:center;}
+.oc-title{font-family:'Orbitron',monospace;font-size:17px;font-weight:700;color:var(--neon);letter-spacing:3px;text-shadow:var(--neon-glow);}
+.oc-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:3px;margin-top:5px;}
+
+/* DEMO VIDEO */
+.demo-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--neon);margin-bottom:14px;text-align:center;display:flex;align-items:center;justify-content:center;gap:12px;}
+.demo-label::before,.demo-label::after{content:'';flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--neon));}
+.demo-label::after{transform:rotate(180deg);}
+.demo-wrap{background:var(--card);border:1px solid #00f0ff33;border-radius:14px;overflow:hidden;width:100%;}
+.demo-irow{display:flex;gap:10px;padding:14px 18px;}
+.demo-input{flex:1;background:var(--bg);border:1px solid #00f0ff33;border-radius:6px;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--neon);outline:none;transition:border-color .3s;}
+.demo-input::placeholder{color:var(--dim);}
+.demo-input:focus{border-color:var(--neon);}
+.demo-ebtn{background:var(--neon);color:var(--bg);border:none;border-radius:6px;padding:11px 20px;font-family:'Orbitron',monospace;font-size:12px;cursor:pointer;transition:all .3s;font-weight:700;}
+.demo-ebtn:hover{background:#fff;box-shadow:var(--neon-glow);}
+.demo-frame{width:100%;height:480px;border:none;display:none;}
+.demo-ph{height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;position:relative;cursor:pointer;}
+.demo-ph:hover{background:#00f0ff04;}
+.demo-ph .vph-icon{font-size:52px;}
+.demo-ph .vph-text{font-size:12px;}
+.demo-ph input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.demo-ph video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0 0 14px 14px;display:none;}
+
+/* CONCLUSION */
+.cc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.cc{background:var(--card2);border:1px solid #00f0ff18;border-radius:12px;padding:30px;opacity:0;transform:translateY(22px);transition:all .6s;position:relative;overflow:hidden;}
+.cc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0;transition:opacity .3s;}
+.cc:hover::before{opacity:1;}
+.cc.vis{opacity:1;transform:translateY(0);}
+.cc:hover{border-color:#00f0ff44;transform:translateY(-4px);}
+.cc-icon{font-size:28px;margin-bottom:14px;display:block;}
+.cc h3{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--neon);margin-bottom:12px;letter-spacing:1px;}
+.cc p{font-size:14px;line-height:1.85;color:var(--dim);}
+
+/* FOOTER */
+footer{text-align:center;padding:44px 52px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:3px;border-top:1px solid #00f0ff11;position:relative;}
+footer::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);}
+footer span{color:var(--neon);}
+
+.fi{opacity:0;transform:translateY(16px);transition:opacity .7s,transform .7s;}
+.fi.vis{opacity:1;transform:translateY(0);}
+
+@media(max-width:768px){
+  nav{padding:0 20px;}
+  .nav-links{gap:14px;}
+  .nav-links a{font-size:9px;}
+  #hero,.sw{padding-left:24px;padding-right:24px;}
+  .hc{display:none;}
+  .iot-grid,.cc-grid{grid-template-columns:1fr;}
+  .step{flex-direction:column;gap:20px;}
+  .steps::before{display:none;}
+  .merge-objects{gap:24px;}
+  .obj-card{width:120px;height:160px;}
+  .obj-icon{font-size:36px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">AIR UNIVERSITY</div>
+  <div class="nav-links">
+    <a href="#hero">HOME</a>
+    <a href="#abstract">ABSTRACT</a>
+    <a href="#how">METHODOLOGY</a>
+    <a href="#iot">IoT SYSTEM</a>
+    <a href="#result">RESULT</a>
+    <a href="#conclusion">CONCLUSION</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-glow"></div>
+  <div class="hc tl"></div><div class="hc tr"></div>
+  <div class="hc bl"></div><div class="hc br"></div>
+
+  <div class="hero-eyebrow">AIR UNIVERSITY, ISLAMABAD &nbsp;·&nbsp; BE MECHATRONICS 2022–2026</div>
+
+  <h1 class="hero-title">
+    Development of a<br/>
+    <span class="hl">Robotic Arm Based FDM</span>
+    3D Printer
+  </h1>
+
+  <div class="hero-divider">
+    <div class="hdl"></div><div class="hdd"></div><div class="hdl"></div>
+  </div>
+
+  <div class="hero-subtitle">FINAL YEAR PROJECT &nbsp;//&nbsp; DEPT. OF MECHATRONICS &amp; BIOMEDICAL ENGINEERING &nbsp;//&nbsp; 2025–2026</div>
+
+  <!-- SPEC CHIPS -->
+  <div class="specs-strip">
+    <div class="spec-chip"><div class="spec-val">SCARA</div><div class="spec-label">ARCHITECTURE</div></div>
+    <div class="spec-chip"><div class="spec-val">3 DOF</div><div class="spec-label">DEGREES OF FREEDOM</div></div>
+    <div class="spec-chip"><div class="spec-val">203K</div><div class="spec-label">MM² WORKSPACE</div></div>
+    <div class="spec-chip"><div class="spec-val">260°C</div><div class="spec-label">MAX HOTEND TEMP</div></div>
+    <div class="spec-chip"><div class="spec-val">IoT</div><div class="spec-label">LIVE MONITORING</div></div>
+    <div class="spec-chip"><div class="spec-val">PKR 56K</div><div class="spec-label">TOTAL COST</div></div>
+  </div>
+
+  <!-- TEAM -->
+  <div class="team-section">
+    <div class="team-label">// PROJECT TEAM</div>
+    <div class="team-grid">
+      <div class="team-member">
+        <div class="av-wrap">
+          <div class="av-ring"></div>
+          <div class="avatar">
+            <div class="av-scan"></div>
+            <div class="av-inner">PHOTO<br/>HERE</div>
+            <input type="file" accept="image/*" onchange="setAv(this,'av0')"/><img id="av0"/>
+          </div>
+        </div>
+        <div class="member-name">MOUAZ HASHIR</div>
+        <div class="member-id">221650</div>
+        <div class="member-role">GROUP MEMBER</div>
+      </div>
+      <div class="team-member">
+        <div class="av-wrap">
+          <div class="av-ring"></div>
+          <div class="avatar">
+            <div class="av-scan"></div>
+            <div class="av-inner">PHOTO<br/>HERE</div>
+            <input type="file" accept="image/*" onchange="setAv(this,'av1')"/><img id="av1"/>
+          </div>
+        </div>
+        <div class="member-name">ARMAGHAN TAHIR</div>
+        <div class="member-id">221662</div>
+        <div class="member-role">GROUP MEMBER</div>
+      </div>
+      <div class="team-member">
+        <div class="av-wrap">
+          <div class="av-ring"></div>
+          <div class="avatar">
+            <div class="av-scan"></div>
+            <div class="av-inner">PHOTO<br/>HERE</div>
+            <input type="file" accept="image/*" onchange="setAv(this,'av2')"/><img id="av2"/>
+          </div>
+        </div>
+        <div class="member-name">MUHAMMAD HUSSAIN</div>
+        <div class="member-id">221677</div>
+        <div class="member-role">GROUP MEMBER</div>
+      </div>
+    </div>
+    <div class="sup-section">
+      <div class="sup-badge">PROJECT SUPERVISOR</div>
+      <div class="av-wrap">
+        <div class="av-ring" style="border-color:#0080ff22"></div>
+        <div class="avatar" style="width:82px;height:82px;border-color:var(--neon2);box-shadow:0 0 20px #0080ff33">
+          <div class="av-scan" style="background:linear-gradient(180deg,transparent,#0080ff18,transparent)"></div>
+          <div class="av-inner" style="color:var(--neon2)">PHOTO<br/>HERE</div>
+          <input type="file" accept="image/*" onchange="setAv(this,'av3')"/><img id="av3"/>
+        </div>
+      </div>
+      <div class="member-name" style="color:var(--dim);margin-top:10px;">DR. SYED ZAHID HUSSAIN</div>
+      <div class="member-role" style="color:#0080ff88;">ASSISTANT PROFESSOR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABSTRACT -->
+<div id="abstract" class="sw" style="background:var(--bg2)">
+<div class="si">
+  <div class="se">01 &nbsp; ABSTRACT</div>
+  <h2 class="st">What We <span>Built</span></h2>
+
+  <div class="ab-body fi">
+    <p>
+      This project presents the design and development of a <strong>SCARA (Selective Compliance Assembly Robot Arm) based FDM 3D printer</strong>, integrated with an IoT monitoring system. The primary objective was to develop a cost-effective robotic arm based FDM 3D printer capable of providing better motion flexibility and a larger workspace compared to conventional gantry-based 3D printers.
+    </p>
+    <p>
+      Conventional gantry-based printers are fundamentally constrained by their Cartesian frame — restricted to a fixed build volume, unable to handle complex overhanging geometries without support material, and offering no remote visibility into the printing process. The SCARA architecture directly addresses these limitations through its <strong>R-R-P (Revolute-Revolute-Prismatic) kinematic configuration</strong>: two revolute joints controlling the X-Y plane position and one prismatic joint controlling the Z-axis, delivering 3 degrees of freedom and a circular working workspace significantly larger than the machine's physical footprint.
+    </p>
+    <p>
+      The printer structure is <strong>mostly 3D-printed from PETG filament</strong> — chosen for its superior thermal resistance and impact toughness over PLA — making it a low-cost, open-source platform. Motion control is handled by an <strong>Arduino Mega 2560 with RAMPS 1.4</strong> running customised Marlin firmware with SCARA inverse kinematics. Four <strong>NEMA 17 stepper motors</strong> driven by TMC 2209 silent-step drivers provide smooth, precise motion. An <strong>ESP32 microcontroller</strong> handles IoT monitoring, streaming temperature and vibration data wirelessly to a local web dashboard. The project successfully demonstrated stable printing operation, functional inverse kinematics, and real-time IoT monitoring.
+    </p>
+  </div>
+
+  <!-- SPECS TABLE -->
+  <div class="specs-table fi">
+    <div class="specs-table-head">// PRODUCT SPECIFICATIONS</div>
+    <div class="specs-row"><span class="specs-key">Architecture</span><span class="specs-val">SCARA R-R-P configuration — 3 DOF + 1 extruder</span></div>
+    <div class="specs-row"><span class="specs-key">Arm Lengths</span><span class="specs-val">Link 1: 228 mm &nbsp;|&nbsp; Link 2: 136.5 mm</span></div>
+    <div class="specs-row"><span class="specs-key">Workspace Area</span><span class="specs-val">~203,575 mm² circular &nbsp;|&nbsp; Max height: 200 mm</span></div>
+    <div class="specs-row"><span class="specs-key">Motors</span><span class="specs-val">4× NEMA 17 (0.48 Nm) &nbsp;|&nbsp; Joint 1: 20:1 reduction &nbsp;|&nbsp; Joint 2: 16:1 reduction</span></div>
+    <div class="specs-row"><span class="specs-key">Motor Drivers</span><span class="specs-val">MKS TMC2209 V2.0 — SilentStepStick technology</span></div>
+    <div class="specs-row"><span class="specs-key">Controller</span><span class="specs-val">Arduino Mega 2560 + RAMPS 1.4 &nbsp;|&nbsp; Marlin firmware (SCARA mode)</span></div>
+    <div class="specs-row"><span class="specs-key">IoT Controller</span><span class="specs-val">ESP32 with built-in Wi-Fi module</span></div>
+    <div class="specs-row"><span class="specs-key">Hotend</span><span class="specs-val">Generic E3D V6 &nbsp;|&nbsp; Max 260°C &nbsp;|&nbsp; 0.4 mm nozzle &nbsp;|&nbsp; 1.75 mm filament</span></div>
+    <div class="specs-row"><span class="specs-key">Structural Material</span><span class="specs-val">PETG (arm links &amp; body) &nbsp;|&nbsp; Stainless steel smooth rods + lead screw</span></div>
+    <div class="specs-row"><span class="specs-key">Power Supply</span><span class="specs-val">24V / 240W DC &nbsp;|&nbsp; System power: ~102W</span></div>
+    <div class="specs-row"><span class="specs-key">Total Cost</span><span class="specs-val">PKR 55,912 — significantly below commercial equivalents</span></div>
+  </div>
+
+  <!-- MERGE ANIMATION -->
+  <div class="merge-scene" id="mergeScene">
+    <div class="merge-objects" id="mergeObjects">
+      <div class="obj-card">
+        <div class="obj-icon">🦾</div>
+        <div class="obj-label">SCARA<br/>ROBOT</div>
+        <div class="obj-sub">R-R-P kinematics</div>
+      </div>
+      <div class="merge-conn"><span>+</span></div>
+      <div class="obj-card">
+        <div class="obj-icon">🖨️</div>
+        <div class="obj-label">FDM<br/>PRINTER</div>
+        <div class="obj-sub">E3D V6 hotend</div>
+      </div>
+      <div class="merge-conn"><span>+</span></div>
+      <div class="obj-card">
+        <div class="obj-icon">📡</div>
+        <div class="obj-label">IoT<br/>MONITOR</div>
+        <div class="obj-sub">ESP32 web server</div>
+      </div>
+    </div>
+    <div class="merge-result" id="mergeResult">
+      <div class="obj-icon" style="font-size:52px">⚙️</div>
+      <div class="obj-label" style="font-size:11px">SCARA FDM IoT<br/>3D PRINTER</div>
+      <div class="obj-sub">ONE MACHINE</div>
+    </div>
+    <div class="merge-hint" id="mergeHint">↓ &nbsp; SCROLL TO SEE INTEGRATION &nbsp; ↓</div>
+  </div>
+</div></div>
+
+<!-- HOW IT WORKS -->
+<div id="how" class="sw" style="background:var(--bg3)">
+<div class="si">
+  <div class="se">02 &nbsp; METHODOLOGY</div>
+  <h2 class="st">How It <span>Works</span></h2>
+  <div class="steps">
+
+    <!-- STEP 01 -->
+    <div class="step" data-s>
+      <div class="snum-wrap">
+        <div class="snum"><div class="snum-ring"></div><div class="snum-inner">01</div></div>
+      </div>
+      <div class="sc">
+        <div class="stag">// DESIGN PHASE</div>
+        <div class="sti">CAD Model Design</div>
+        <div class="sd">The process begins with a <strong>3D CAD model</strong> of the object to be fabricated. Using CAD software, the engineer defines all geometry, dimensional tolerances, wall thicknesses, and structural requirements. This stage is entirely virtual — no material is committed until the model is fully verified. The CAD model serves as the single source of truth for all downstream fabrication steps. For this project, the SCARA arm structure itself was CAD-designed first, stress-analysed using Von Mises analysis (confirming a safety factor of ~4 with PETG at 50 MPa yield strength), and then 3D-printed.</div>
+        <div class="vew">
+          <div class="vel">VIDEO — CAD MODELLING</div>
+          <div class="vbox">
+            <div class="vrow"><input class="vinput" placeholder="Paste Google Drive share link…" id="gi0"/><button class="vbtn" onclick="embedV('gi0','gf0','gp0')">EMBED</button></div>
+            <div class="vph" id="gp0"><div class="vph-icon">▶</div><div class="vph-text">Paste a Google Drive link above<br/>or click to upload a local video</div><div class="vph-hint">DRIVE LINKS · MP4 · WEBM</div><input type="file" accept="video/*" onchange="setLV(this,'gp0','gv0')"/><video id="gv0" controls></video></div>
+            <iframe id="gf0" class="vframe" allowfullscreen allow="autoplay"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 02 -->
+    <div class="step" data-s>
+      <div class="snum-wrap">
+        <div class="snum"><div class="snum-ring"></div><div class="snum-inner">02</div></div>
+      </div>
+      <div class="sc">
+        <div class="stag">// PROCESSING PHASE</div>
+        <div class="sti">Slicing Software</div>
+        <div class="sd">The CAD model is imported into <strong>slicing software</strong> which translates the 3D geometry into printable layer-by-layer instructions. The slicer divides the model into thin horizontal cross-sections and calculates the optimal toolpath for the SCARA arm's extruder to trace. A key challenge specific to this project was that most slicer software is designed and optimised for Cartesian gantry printers — not for SCARA kinematics. Significant manual configuration was required to generate toolpaths compatible with the SCARA's rotational joint architecture. The slicer also determines print speed, layer height, extrusion width, and support structure requirements.</div>
+        <div class="vew">
+          <div class="vel">VIDEO — SLICING PROCESS</div>
+          <div class="vbox">
+            <div class="vrow"><input class="vinput" placeholder="Paste Google Drive share link…" id="gi1"/><button class="vbtn" onclick="embedV('gi1','gf1','gp1')">EMBED</button></div>
+            <div class="vph" id="gp1"><div class="vph-icon">▶</div><div class="vph-text">Paste a Google Drive link above<br/>or click to upload a local video</div><div class="vph-hint">DRIVE LINKS · MP4 · WEBM</div><input type="file" accept="video/*" onchange="setLV(this,'gp1','gv1')"/><video id="gv1" controls></video></div>
+            <iframe id="gf1" class="vframe" allowfullscreen allow="autoplay"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 03 -->
+    <div class="step" data-s>
+      <div class="snum-wrap">
+        <div class="snum"><div class="snum-ring"></div><div class="snum-inner">03</div></div>
+      </div>
+      <div class="sc">
+        <div class="stag">// CODE GENERATION</div>
+        <div class="sti">G-Code Generation</div>
+        <div class="sd">The slicer outputs a <strong>G-code file</strong> — a standardised sequence of motion commands encoding every instruction the printer needs: coordinates, extrusion amounts, travel speeds, and temperatures. For this SCARA system, the G-code's Cartesian X-Y coordinates are fed into the <strong>Marlin firmware's SCARA inverse kinematics solver</strong>, which in real-time converts each position into the corresponding angular values for Joint 1 and Joint 2. The firmware was configured with the exact SCARA linkage lengths (L1 = 228 mm, L2 = 136.5 mm), gear reduction ratios (20:1 and 16:1), and homing offsets — a process requiring extensive manual calibration.</div>
+        <div class="vew">
+          <div class="vel">VIDEO — G-CODE & FIRMWARE</div>
+          <div class="vbox">
+            <div class="vrow"><input class="vinput" placeholder="Paste Google Drive share link…" id="gi2"/><button class="vbtn" onclick="embedV('gi2','gf2','gp2')">EMBED</button></div>
+            <div class="vph" id="gp2"><div class="vph-icon">▶</div><div class="vph-text">Paste a Google Drive link above<br/>or click to upload a local video</div><div class="vph-hint">DRIVE LINKS · MP4 · WEBM</div><input type="file" accept="video/*" onchange="setLV(this,'gp2','gv2')"/><video id="gv2" controls></video></div>
+            <iframe id="gf2" class="vframe" allowfullscreen allow="autoplay"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 04 -->
+    <div class="step" data-s>
+      <div class="snum-wrap">
+        <div class="snum"><div class="snum-ring"></div><div class="snum-inner">04</div></div>
+      </div>
+      <div class="sc">
+        <div class="stag">// EXECUTION PHASE</div>
+        <div class="sti">SCARA Arm Execution</div>
+        <div class="sd">With G-code transmitted to the <strong>Arduino Mega 2560 + RAMPS 1.4 controller</strong>, the printing process begins. The Marlin firmware reads each G-code command and uses its SCARA inverse kinematics solver to compute the required joint angles in real-time. The <strong>TMC 2209 SilentStepStick motor drivers</strong> command the NEMA 17 stepper motors to rotate Joint 1 and Joint 2 to the calculated angles while the Z-axis prismatic joint rises steadily layer by layer. The E3D V6 hotend heats the filament to extrusion temperature and deposits it precisely along the calculated toolpath. Homing at startup — using X, Y, and Z endstops — establishes the SCARA's zero reference position before each print.</div>
+        <div class="vew">
+          <div class="vel">VIDEO — ARM IN ACTION</div>
+          <div class="vbox">
+            <div class="vrow"><input class="vinput" placeholder="Paste Google Drive share link…" id="gi3"/><button class="vbtn" onclick="embedV('gi3','gf3','gp3')">EMBED</button></div>
+            <div class="vph" id="gp3"><div class="vph-icon">▶</div><div class="vph-text">Paste a Google Drive link above<br/>or click to upload a local video</div><div class="vph-hint">DRIVE LINKS · MP4 · WEBM</div><input type="file" accept="video/*" onchange="setLV(this,'gp3','gv3')"/><video id="gv3" controls></video></div>
+            <iframe id="gf3" class="vframe" allowfullscreen allow="autoplay"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 05 -->
+    <div class="step" data-s>
+      <div class="snum-wrap">
+        <div class="snum"><div class="snum-ring"></div><div class="snum-inner">05</div></div>
+      </div>
+      <div class="sc">
+        <div class="stag">// MONITORING PHASE</div>
+        <div class="sti">IoT Monitoring — Continuous</div>
+        <div class="sd">Running in parallel throughout the print is the <strong>ESP32-based IoT monitoring subsystem</strong>. The ESP32 operates independently from the main Marlin controller, continuously reading two sensors: a <strong>SW420 vibration sensor</strong> mounted on the arm structure near the extruder, and a <strong>100K NTC thermistor</strong> monitoring hotend temperature. The ESP32 hosts a local web server and uploads this sensor data wirelessly — the live readings are displayed on an <strong>ESP32 Sensor Dashboard</strong> accessible from any browser on the same Wi-Fi network, auto-refreshing every 2 seconds. This enables the operator to monitor temperature and vibration remotely without being physically present at the machine.</div>
+        <div class="vew">
+          <div class="vel">VIDEO — IoT DASHBOARD</div>
+          <div class="vbox">
+            <div class="vrow"><input class="vinput" placeholder="Paste Google Drive share link…" id="gi4"/><button class="vbtn" onclick="embedV('gi4','gf4','gp4')">EMBED</button></div>
+            <div class="vph" id="gp4"><div class="vph-icon">▶</div><div class="vph-text">Paste a Google Drive link above<br/>or click to upload a local video</div><div class="vph-hint">DRIVE LINKS · MP4 · WEBM</div><input type="file" accept="video/*" onchange="setLV(this,'gp4','gv4')"/><video id="gv4" controls></video></div>
+            <iframe id="gf4" class="vframe" allowfullscreen allow="autoplay"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div></div>
+
+<!-- IOT SECTION -->
+<div id="iot" class="sw" style="background:var(--bg4)">
+<div class="si">
+  <div class="se">03 &nbsp; IoT MONITORING SYSTEM</div>
+  <h2 class="st">ESP32 <span>Dashboard</span></h2>
+
+  <div class="ab-body fi" style="margin-bottom:40px;">
+    <p>The IoT monitoring subsystem runs on a dedicated <strong>ESP32 microcontroller with built-in Wi-Fi</strong>, operating independently from the main 3D printing controller. This separation ensures the monitoring system does not interfere with the real-time motion control of the SCARA arm. The ESP32 hosts a local web server that displays live sensor data on a browser-accessible dashboard — auto-refreshing every 2 seconds — allowing the operator to supervise the printer remotely over Wi-Fi.</p>
+  </div>
+
+  <div class="iot-grid fi">
+    <div class="iot-card">
+      <span class="iot-icon">🌡️</span>
+      <div class="iot-title">Temperature Monitoring</div>
+      <div class="iot-body">A <strong>100K NTC thermistor</strong> mounted on the E3D V6 hotend heater block continuously measures extruder temperature. The dashboard displays readings in both Celsius and Fahrenheit, alongside the NTC resistance value. This data helps detect thermal anomalies — under-heating causes clogging, over-heating degrades the filament. The same thermistor data is also used by Marlin for closed-loop temperature control during printing.</div>
+    </div>
+    <div class="iot-card">
+      <span class="iot-icon">📳</span>
+      <div class="iot-title">Vibration Monitoring</div>
+      <div class="iot-body">A <strong>SW420 vibration sensor</strong> is mounted on the arm structure near the extruder. It uses a spring-based mechanism to generate a digital signal when vibration exceeds an adjustable threshold. The dashboard displays live SW-420 status. Excessive vibration during printing introduces dimensional inaccuracies and surface defects — monitoring it helps identify loose components, resonance issues, or calibration problems early.</div>
+    </div>
+    <div class="iot-card">
+      <span class="iot-icon">🌐</span>
+      <div class="iot-title">ESP32 Web Server</div>
+      <div class="iot-body">The ESP32 hosts a local web server (ESP Webserver) accessible from any device on the same Wi-Fi network. The dashboard auto-refreshes every 2 seconds, displaying all sensor readings in real time. No external cloud subscription is required — the entire monitoring system operates on the local network. A live reading of 173.0°C / 343.5°F and vibration status "NONE" was confirmed during testing, validating the system's functionality.</div>
+    </div>
+    <div class="iot-card">
+      <span class="iot-icon">⚡</span>
+      <div class="iot-title">Independent Architecture</div>
+      <div class="iot-body">The ESP32 monitoring system operates on a <strong>completely separate circuit</strong> from the Arduino Mega + RAMPS 1.4 printing controller. This ensures that the IoT subsystem's Wi-Fi communications and sensor polling do not introduce latency or interference into the time-critical stepper motor control and inverse kinematics calculations. Future work could integrate the two systems to enable automatic emergency shutdown on anomaly detection.</div>
+    </div>
+  </div>
+</div></div>
+
+<!-- RESULT -->
+<div id="result" class="sw" style="background:var(--bg2)">
+<div class="si">
+  <div class="se">04 &nbsp; RESULT</div>
+  <h2 class="st">The Final <span>Product</span></h2>
+
+  <div class="result-layout">
+    <div class="orbit-wrap fi">
+      <div class="orbit">
+        <div class="or1"><div class="or-dot"></div></div>
+        <div class="or2"><div class="or-dot2"></div></div>
+        <div class="or3"></div>
+        <div class="orbit-core" id="orCore">
+          <div class="oc-icon">⚙️</div>
+          <div class="oc-label">SCARA FDM<br/>IoT PRINTER</div>
+        </div>
+      </div>
+      <div class="orbit-caption">
+        <div class="oc-title">SCARA FDM IoT 3D PRINTER</div>
+        <div class="oc-sub">AIR UNIVERSITY &nbsp;·&nbsp; MECHATRONICS &nbsp;·&nbsp; 2026</div>
+      </div>
+    </div>
+
+    <div class="demo-label fi">FULL WORKING DEMONSTRATION</div>
+    <div class="demo-wrap fi">
+      <div class="demo-irow">
+        <input class="demo-input" placeholder="Paste Google Drive share link for demo video…" id="demoIn"/>
+        <button class="demo-ebtn" onclick="embedDemo()">EMBED VIDEO</button>
+      </div>
+      <div class="demo-ph" id="demoPh">
+        <div class="vph-icon">▶</div>
+        <div class="vph-text">Paste your Google Drive video link above<br/>or click here to upload a local video file</div>
+        <div class="vph-hint">FULL WORKING DEMO — ALL SYSTEMS ACTIVE</div>
+        <input type="file" accept="video/*" onchange="setDemoLV(this)"/>
+        <video id="demoVid" controls></video>
+      </div>
+      <iframe id="demoFrame" class="demo-frame" allowfullscreen allow="autoplay"></iframe>
+    </div>
+  </div>
+</div></div>
+
+<!-- CONCLUSION -->
+<div id="conclusion" class="sw" style="background:var(--bg)">
+<div class="si">
+  <div class="se">05 &nbsp; CONCLUSION</div>
+  <h2 class="st">Closing <span>Remarks</span></h2>
+  <div class="cc-grid">
+    <div class="cc" data-c>
+      <span class="cc-icon">🎯</span>
+      <h3>What We Achieved</h3>
+      <p>Successfully designed, fabricated, and validated a SCARA robotic arm-based FDM 3D printing system with integrated IoT monitoring — all within a budget of PKR 55,912. The system demonstrated functional inverse kinematics, stable layer-by-layer extrusion, successful homing, and live sensor monitoring, confirming the feasibility of a low-cost open-source SCARA FDM platform.</p>
+    </div>
+    <div class="cc" data-c>
+      <span class="cc-icon">🚀</span>
+      <h3>Key Innovations</h3>
+      <p>The core innovation is the SCARA R-R-P kinematic architecture replacing a conventional gantry, delivering a circular workspace of ~203,575 mm² with a 200 mm height — larger than the machine's physical footprint. The mostly-PETG-printed structure dramatically reduces manufacturing cost. The independent ESP32 IoT layer adds remote observability without affecting print performance.</p>
+    </div>
+    <div class="cc" data-c>
+      <span class="cc-icon">📊</span>
+      <h3>Challenges &amp; Limitations</h3>
+      <p>The most significant challenge was limited SCARA support in existing slicer and firmware software — extensive manual configuration of Marlin's SCARA settings, linkage lengths, gear ratios, and homing offsets was required. Vibration increased at higher arm speeds, and positioning accuracy was highly sensitive to linkage calibration. PETG structural parts exhibit some elastic deformation under load.</p>
+    </div>
+    <div class="cc" data-c>
+      <span class="cc-icon">🔭</span>
+      <h3>Future Work</h3>
+      <p>Identified pathways include: closed-loop position feedback via encoders; development of SCARA-specific slicing software; true multi-axis printing with a tilting print surface; replacement of high-wear PETG components with carbon fibre; integration of ESP32 IoT with Marlin firmware for automatic emergency shutdown; and workspace expansion through extended arm links.</p>
+    </div>
+  </div>
+</div></div>
+
+<footer>
+  <span>AIR UNIVERSITY, ISLAMABAD</span> &nbsp;·&nbsp; DEPT. OF MECHATRONICS &amp; BIOMEDICAL ENGINEERING &nbsp;·&nbsp; <span>FYP 2025–2026</span><br/><br/>
+  Supervised by <span>Dr. Syed Zahid Hussain</span> &nbsp;·&nbsp; Mouaz Hashir · Armaghan Tahir · Muhammad Hussain
+</footer>
+
+<script>
+// GOOGLE DRIVE EMBED
+function driveEmbed(url){
+  let id=null;
+  const ps=[/\/file\/d\/([a-zA-Z0-9_-]+)/,/id=([a-zA-Z0-9_-]+)/,/\/d\/([a-zA-Z0-9_-]+)/];
+  for(const p of ps){const m=url.match(p);if(m){id=m[1];break;}}
+  return id?`https://drive.google.com/file/d/${id}/preview`:null;
+}
+function embedV(inId,frId,phId){
+  const url=document.getElementById(inId).value.trim();if(!url)return;
+  const eu=driveEmbed(url);
+  if(!eu){alert('Could not parse Google Drive link. Make sure sharing is set to "Anyone with the link".');return;}
+  const fr=document.getElementById(frId),ph=document.getElementById(phId);
+  fr.src=eu;fr.style.display='block';ph.style.display='none';
+}
+function setLV(input,phId,vidId){
+  const f=input.files[0];if(!f)return;
+  const vid=document.getElementById(vidId);
+  vid.src=URL.createObjectURL(f);vid.style.display='block';
+  const ph=document.getElementById(phId);
+  ph.querySelector('.vph-icon').style.display='none';
+  ph.querySelector('.vph-text').style.display='none';
+  ph.querySelector('.vph-hint').style.display='none';
+}
+function embedDemo(){
+  const url=document.getElementById('demoIn').value.trim();if(!url)return;
+  const eu=driveEmbed(url);if(!eu){alert('Could not parse Google Drive link.');return;}
+  document.getElementById('demoFrame').src=eu;
+  document.getElementById('demoFrame').style.display='block';
+  document.getElementById('demoPh').style.display='none';
+}
+function setDemoLV(input){
+  const f=input.files[0];if(!f)return;
+  const vid=document.getElementById('demoVid');
+  vid.src=URL.createObjectURL(f);vid.style.display='block';
+  const ph=document.getElementById('demoPh');
+  ph.querySelector('.vph-icon').style.display='none';
+  ph.querySelector('.vph-text').style.display='none';
+  ph.querySelector('.vph-hint').style.display='none';
+}
+
+// AVATAR
+function setAv(input,id){
+  const f=input.files[0];if(!f)return;
+  const img=document.getElementById(id);
+  img.src=URL.createObjectURL(f);
+  img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;display:block;';
+  const av=input.closest('.avatar');
+  const inner=av.querySelector('.av-inner');
+  if(inner)inner.style.display='none';
+}
+
+// SCROLL ANIMATIONS
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('[data-s],[data-c],.fi').forEach(el=>obs.observe(el));
+
+// ORBIT CORE
+const orObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){document.getElementById('orCore').classList.add('vis');orObs.unobserve(e.target);}}),{threshold:.5});
+orObs.observe(document.getElementById('orCore'));
+
+// MERGE ANIMATION
+let merged=false;
+const mObs=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting&&!merged){
+    merged=true;
+    setTimeout(()=>{
+      document.getElementById('mergeObjects').classList.add('merging');
+      const h=document.getElementById('mergeHint');if(h)h.style.opacity='0';
+      setTimeout(()=>document.getElementById('mergeResult').classList.add('visible'),700);
+    },500);
+  }
+}),{threshold:.8});
+mObs.observe(document.getElementById('mergeScene'));
+</script>
+</body>
+</html>
